@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+
+{% block title %}Recommendation Results{% endblock %}
+
+{% block content %}
+
+<style>
+    /* ── Design tokens ── */
+    :root {
+        --portal-primary:   #1E3A5F;
+        --portal-accent:    #D4A017;
+        --portal-bg:        #F8FAFC;
+        --portal-card:      #FFFFFF;
+        --portal-text:      #1F2937;
+        --portal-muted:     #6B7280;
+        --portal-border:    #E5E7EB;
+        --portal-success:   #166534;
+        --portal-warning:   #92400E;
+        --portal-info:      #1E3A5F;
+    }
+
+    /* ── Page wrapper ── */
+    .results-wrapper {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 2.5rem 1.5rem 3rem;
+        background: var(--portal-bg);
+    }
+
+    /* ── Page header ── */
+    .page-header {
+        border-bottom: 2px solid var(--portal-border);
+        padding-bottom: 1.25rem;
+        margin-bottom: 2rem;
+    }
+    .page-header h2 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--portal-primary);
+        margin-bottom: .25rem;
+        letter-spacing: -.01em;
+    }
+    .page-header p {
+        font-size: .9rem;
+        color: var(--portal-muted);
+        margin: 0;
+    }
+
+    /* ── Summary stat cards ── */
+    .stat-card {
+        background: var(--portal-card);
+        border: 1px solid var(--portal-border);
+        border-radius: 8px;
+        padding: 1.1rem 1.25rem;
+        height: 100%;
+    }
+    .stat-card .stat-lbl {
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--portal-muted);
+        margin-bottom: .35rem;
+        display: block;
+    }
+    .stat-card .stat-val {
+        font-size: 1.35rem;
+        font-weight: 700;
+        color: var(--portal-primary);
+        line-height: 1.2;
+    }
+    .stat-card .stat-val.small-val {
+        font-size: 1rem;
+    }
+
+    /* ── Section heading ── */
+    .section-heading {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--portal-primary);
+        padding-bottom: .6rem;
+        border-bottom: 2px solid var(--portal-border);
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+    .result-count {
+        font-size: .75rem;
+        font-weight: 600;
+        background: var(--portal-primary);
+        color: #fff;
+        border-radius: 4px;
+        padding: .15em .55em;
+    }
+
+    /* ── Recommendation card ── */
+    .rec-card {
+        background: var(--portal-card);
+        border: 1px solid var(--portal-border);
+        border-radius: 8px;
+        margin-bottom: 16px;
+        width: 100%;
+        transition: box-shadow .2s ease, border-color .2s ease;
+    }
+    .rec-card:hover {
+        box-shadow: 0 4px 16px rgba(30, 58, 95, .1);
+        border-color: #C7D2DC;
+    }
+    .rec-card-body {
+        padding: 1.5rem 1.75rem;
+    }
+
+    /* ── Card header ── */
+    .rec-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+    .rec-college-name {
+        font-size: 1.15rem;
+        font-weight: 700;
+        color: var(--portal-primary);
+        margin-bottom: .3rem;
+        line-height: 1.35;
+    }
+    .rec-meta {
+        font-size: .85rem;
+        color: var(--portal-muted);
+        margin-bottom: .1rem;
+    }
+    .rec-meta strong {
+        color: var(--portal-text);
+        font-weight: 600;
+    }
+
+    /* ── Probability indicator ── */
+    .prob-indicator {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--portal-primary);
+        color: #fff;
+        border-radius: 6px;
+        padding: .6rem 1.25rem;
+        min-width: 88px;
+        flex-shrink: 0;
+        text-align: center;
+    }
+    .prob-indicator .prob-lbl {
+        font-size: .65rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        opacity: .8;
+        margin-bottom: .1rem;
+    }
+    .prob-indicator .prob-val {
+        font-size: 1.5rem;
+        font-weight: 700;
+        line-height: 1;
+    }
+
+    /* ── Divider ── */
+    .rec-divider {
+        border: none;
+        border-top: 1px solid var(--portal-border);
+        margin: 1rem 0;
+    }
+
+    /* ── Stats row ── */
+    .rec-stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .25rem 0;
+        background: #F9FAFB;
+        border: 1px solid var(--portal-border);
+        border-radius: 6px;
+        overflow: hidden;
+        margin-bottom: 1rem;
+    }
+    .rec-stat-cell {
+        flex: 1 1 160px;
+        padding: .75rem 1rem;
+        border-right: 1px solid var(--portal-border);
+    }
+    .rec-stat-cell:last-child {
+        border-right: none;
+    }
+    .rec-stat-cell .cell-lbl {
+        font-size: .7rem;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: var(--portal-muted);
+        margin-bottom: .25rem;
+        display: block;
+    }
+    .rec-stat-cell .cell-val {
+        font-size: .92rem;
+        font-weight: 600;
+        color: var(--portal-text);
+    }
+
+    /* ── Recommendation level badges ── */
+    .level-badge {
+        display: inline-block;
+        font-size: .75rem;
+        font-weight: 600;
+        padding: .2em .65em;
+        border-radius: 4px;
+        letter-spacing: .02em;
+    }
+    .level-highly-likely {
+        background: #DCFCE7;
+        color: var(--portal-success);
+        border: 1px solid #BBF7D0;
+    }
+    .level-competitive {
+        background: #FEF3C7;
+        color: var(--portal-warning);
+        border: 1px solid #FDE68A;
+    }
+    .level-possible {
+        background: #DBEAFE;
+        color: #1E40AF;
+        border: 1px solid #BFDBFE;
+    }
+
+    /* ── Advisor notes box ── */
+    .advisor-box {
+        background: #FAFBFC;
+        border: 1px solid var(--portal-border);
+        border-left: 3px solid var(--portal-accent);
+        border-radius: 6px;
+        padding: .85rem 1.1rem;
+        margin-bottom: 1rem;
+    }
+    .advisor-box-title {
+        font-size: .72rem;
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        color: var(--portal-accent);
+        font-weight: 700;
+        margin-bottom: .5rem;
+    }
+    .advisor-box ul {
+        margin: 0;
+        padding-left: 1.15rem;
+    }
+    .advisor-box ul li {
+        font-size: .86rem;
+        color: var(--portal-text);
+        margin-bottom: .2rem;
+        line-height: 1.5;
+    }
+
+    /* ── Card footer ── */
+    .rec-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: .75rem;
+        padding-top: .9rem;
+        border-top: 1px solid var(--portal-border);
+    }
+    .rec-footer .form-check-input {
+        border-color: #9CA3AF;
+        border-radius: 3px;
+    }
+    .rec-footer .form-check-input:checked {
+        background-color: var(--portal-primary);
+        border-color: var(--portal-primary);
+    }
+    .rec-footer .form-check-label {
+        font-size: .85rem;
+        color: var(--portal-muted);
+    }
+
+    /* ── Buttons ── */
+    .btn-view {
+        background: var(--portal-primary);
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: .42rem 1.2rem;
+        font-size: .85rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .18s ease;
+    }
+    .btn-view:hover {
+        background: #162d4a;
+        color: #fff;
+    }
+    .btn-compare-all {
+        background: var(--portal-primary);
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: .6rem 2rem;
+        font-size: .95rem;
+        font-weight: 600;
+        transition: background .18s ease;
+        cursor: pointer;
+    }
+    .btn-compare-all:hover {
+        background: #162d4a;
+        color: #fff;
+    }
+
+    /* ── No results ── */
+    .no-results-card {
+        background: var(--portal-card);
+        border: 1px solid var(--portal-border);
+        border-radius: 8px;
+        padding: 3rem 2rem;
+        text-align: center;
+    }
+    .no-results-card h4 {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--portal-primary);
+        margin-bottom: .5rem;
+    }
+    .no-results-card p {
+        font-size: .9rem;
+        color: var(--portal-muted);
+        margin-bottom: 1.25rem;
+    }
+    .btn-retry {
+        background: var(--portal-primary);
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        padding: .5rem 1.5rem;
+        font-size: .9rem;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-block;
+        transition: background .18s ease;
+    }
+    .btn-retry:hover {
+        background: #162d4a;
+        color: #fff;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+        .results-wrapper { padding: 1.5rem 1rem 2rem; }
+        .rec-card-body { padding: 1.1rem 1rem; }
+        .rec-college-name { font-size: 1rem; }
+        .rec-stat-cell { flex: 1 1 120px; }
+        .prob-indicator .prob-val { font-size: 1.25rem; }
+    }
+    @media (max-width: 480px) {
+        .rec-header { flex-direction: column; }
+        .prob-indicator { width: 100%; flex-direction: row; justify-content: space-between; padding: .5rem .9rem; }
+        .rec-stat-cell { flex: 1 1 100%; border-right: none; border-bottom: 1px solid var(--portal-border); }
+        .rec-stat-cell:last-child { border-bottom: none; }
+    }
+</style>
+
+<div class="results-wrapper">
+
+    <!-- Page header -->
+    <div class="page-header">
+        <h2>College Recommendation Results</h2>
+        <p>Results generated based on your cutoff score, community category, and branch preference.</p>
+    </div>
+
+    <!-- Summary stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <span class="stat-lbl">Cutoff Score</span>
+                <div class="stat-val">{{ cutoff }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <span class="stat-lbl">Community</span>
+                <div class="stat-val">{{ community }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <span class="stat-lbl">Branch</span>
+                <div class="stat-val small-val">{{ branch }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="stat-card">
+                <span class="stat-lbl">Academic Year</span>
+                <div class="stat-val">{{ year }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recommendations -->
+    {% if recommendations %}
+
+    <div class="section-heading">
+        Recommended Colleges
+        <span class="result-count">{{ recommendations|length }} results</span>
+    </div>
+
+    <form action="/compare" method="GET">
+
+        {% for college in recommendations %}
+        <div class="rec-card">
+            <div class="rec-card-body">
+
+                <!-- Header -->
+                <div class="rec-header">
+                    <div>
+                        <div class="rec-college-name">{{ college.college_name }}</div>
+                        <div class="rec-meta"><strong>Branch</strong> &nbsp;{{ college.branch_name }}</div>
+                        <div class="rec-meta"><strong>District</strong> &nbsp;{{ college.district }}</div>
+                    </div>
+                    <div class="prob-indicator">
+                        <span class="prob-lbl">Probability</span>
+                        <span class="prob-val">{{ college.probability }}%</span>
+                    </div>
+                </div>
+
+                <!-- Stats row -->
+                <div class="rec-stats">
+                    <div class="rec-stat-cell">
+                        <span class="cell-lbl">Status</span>
+                        <span class="cell-val">
+                            {% if college.recommendation_level == "Highly Likely" %}
+                                <span class="level-badge level-highly-likely">{{ college.recommendation_level }}</span>
+                            {% elif college.recommendation_level == "Competitive" %}
+                                <span class="level-badge level-competitive">{{ college.recommendation_level }}</span>
+                            {% else %}
+                                <span class="level-badge level-possible">{{ college.recommendation_level }}</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="rec-stat-cell">
+                        <span class="cell-lbl">Ranking Score</span>
+                        <span class="cell-val">{{ college.ranking_score }}</span>
+                    </div>
+                    <div class="rec-stat-cell">
+                        <span class="cell-lbl">Previous Cutoff</span>
+                        <span class="cell-val">{{ college.cutoff }}</span>
+                    </div>
+                    <div class="rec-stat-cell">
+                        <span class="cell-lbl">Admission Probability</span>
+                        <span class="cell-val">{{ college.probability }}%</span>
+                    </div>
+                </div>
+
+                <!-- Advisor notes -->
+                <div class="advisor-box">
+                    <div class="advisor-box-title">Advisor Notes</div>
+                    <ul>
+                        {% for reason in college.ai_reason %}
+                        <li>{{ reason }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Footer -->
+                <div class="rec-footer">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="college" value="{{ college.college_code }}">
+                        <label class="form-check-label">Select for comparison</label>
+                    </div>
+                    <a href="/college/{{ college.college_code }}" class="btn-view">View College Details</a>
+                </div>
+
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="text-end mt-3 mb-2">
+            <button type="submit" class="btn-compare-all">Compare Selected Colleges</button>
+        </div>
+
+    </form>
+
+    {% else %}
+
+    <div class="no-results-card">
+        <p style="font-size:2rem;margin-bottom:.5rem;">&#9888;</p>
+        <h4>No Matching Colleges Found</h4>
+        <p>No colleges match your selected cutoff, community, branch, district, and year. Please adjust your criteria and try again.</p>
+        <a href="/planner" class="btn-retry">Modify Search</a>
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

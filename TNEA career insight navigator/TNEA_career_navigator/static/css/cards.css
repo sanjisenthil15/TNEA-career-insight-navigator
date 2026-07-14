@@ -1,0 +1,26 @@
+/* ================================================
+   TNEA Smart College Advisor — Cards
+   Professional University Portal Theme
+================================================ */
+
+/* ── Generic card reset ── */
+.card {
+    border-radius: 8px;
+    border: 1px solid #E5E7EB;
+    box-shadow: none;
+}
+
+/* ── Result page: full-width rec-card ── */
+.rec-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: block;
+}
+
+/* ── Stat card subtle hover ── */
+.stat-card {
+    transition: border-color .18s ease;
+}
+.stat-card:hover {
+    border-color: #C7D2DC;
+}

@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}
+College Details
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="row">
+
+        <div class="col-lg-12">
+
+            <div class="card shadow-lg border-0 rounded-4">
+
+                <div class="card-body p-5">
+
+                    <div class="row align-items-center">
+
+                        <div class="col-lg-8">
+
+                            <h2 class="fw-bold text-primary">
+
+                                {{ college.college_name }}
+
+                            </h2>
+
+                            <p class="text-muted mt-3">
+
+                                📍 {{ college.district }}
+
+                            </p>
+
+                            <p>
+
+                                <strong>College Code :</strong>
+
+                                {{ college.college_code }}
+
+                            </p>
+
+                        </div>
+
+                        <div class="col-lg-4 text-center">
+
+                            <div class="display-5">
+
+                                🏫
+
+                            </div>
+
+                            <h4 class="text-success">
+
+                                Engineering College
+
+                            </h4>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- ========================================= -->
+    <!-- Available Branches -->
+    <!-- ========================================= -->
+
+    <div class="row mt-5">
+
+        <div class="col-lg-12">
+
+            <div class="card shadow border-0 rounded-4">
+
+                <div class="card-body">
+
+                    <h3 class="text-primary mb-4">
+
+                        🎓 Available Branches
+
+                    </h3>
+
+                    <div class="row">
+
+                        {% for branch in branches %}
+
+                        <div class="col-md-6 col-lg-4 mb-3">
+
+                            <div class="card h-100 border-primary">
+
+                                <div class="card-body">
+
+                                    <h5 class="fw-bold">
+
+                                        {{ branch.branch_name }}
+
+                                    </h5>
+
+                                    <p class="text-muted mb-0">
+
+                                        Branch Code :
+                                        {{ branch.branch_code }}
+
+                                    </p>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                        {% endfor %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+    <!-- ========================================= -->
+<!-- AI College Insight -->
+<!-- ========================================= -->
+
+<div class="row mt-5">
+
+    <div class="col-lg-12">
+
+        <div class="card border-0 shadow rounded-4">
+
+            <div class="card-body">
+
+                <h3 class="text-primary mb-4">
+
+                    🤖 AI College Insight
+
+                </h3>
+
+                <div class="alert alert-primary">
+
+                    <h5 class="fw-bold">
+
+                        Career Insight
+
+                    </h5>
+
+                    <p>
+
+                        <strong>{{ college.college_name }}</strong>
+                        offers multiple engineering programs and participates
+                        in the TNEA counselling process.
+
+                    </p>
+
+                    <p>
+
+                        Based on your selected cutoff and branch,
+                        this college appears in your recommendation list
+                        because it matches your admission profile.
+
+                    </p>
+
+                    <p class="mb-0">
+
+                        Our AI recommendation engine compares your cutoff
+                        with previous years' official TNEA cutoff data
+                        to estimate your admission opportunity.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+<!-- ========================================= -->
+<!-- Action Buttons -->
+<!-- ========================================= -->
+
+<div class="row mt-4 mb-5">
+
+    <div class="col-lg-12 text-center">
+
+        <a href="{{ url_for('planner') }}"
+           class="btn btn-primary btn-lg me-3">
+
+            ← Back to Planner
+
+        </a>
+
+        <a href="{{ url_for('home') }}"
+           class="btn btn-outline-secondary btn-lg me-3">
+
+            🏠 Home
+
+        </a>
+
+        <button
+            class="btn btn-success btn-lg"
+            disabled>
+
+            ⚖ Compare College
+            <small>(Coming Soon)</small>
+
+        </button>
+
+    </div>
+
+</div>
+
+</div>
+
+{% endblock %}

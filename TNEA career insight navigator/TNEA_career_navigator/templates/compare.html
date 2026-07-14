@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+
+{% block title %}
+Compare Colleges
+{% endblock %}
+
+{% block content %}
+
+<div class="container py-5">
+
+    <div class="text-center mb-5">
+
+        <h2 class="fw-bold text-primary">
+
+            ⚖ Compare Colleges
+
+        </h2>
+
+        <p class="text-muted">
+
+            Compare engineering colleges side by side.
+
+        </p>
+
+    </div>
+
+    <div class="card shadow border-0 rounded-4">
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table table-bordered table-hover align-middle">
+
+                    <thead class="table-primary">
+
+                        <tr>
+
+                            <th>Feature</th>
+
+                            {% for college in colleges %}
+
+                            <th class="text-center">
+
+                                {{ college.college_name }}
+
+                            </th>
+
+                            {% endfor %}
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+                                                <tr>
+
+                            <th>College Code</th>
+
+                            {% for college in colleges %}
+
+                            <td class="text-center">
+
+                                {{ college.college_code }}
+
+                            </td>
+
+                            {% endfor %}
+
+                        </tr>
+
+                        <tr>
+
+                            <th>District</th>
+
+                            {% for college in colleges %}
+
+                            <td class="text-center">
+
+                                {{ college.district }}
+
+                            </td>
+
+                            {% endfor %}
+
+                        </tr>
+
+                        <tr>
+
+                            <th>College Type</th>
+
+                            {% for college in colleges %}
+
+                            <td class="text-center">
+
+                                {{ college.college_type }}
+
+                            </td>
+
+                            {% endfor %}
+
+                        </tr>
+                                                <tr>
+
+                            <th>Actions</th>
+
+                            {% for college in colleges %}
+
+                            <td class="text-center">
+
+                                <a href="/college/{{ college.college_code }}"
+                                   class="btn btn-primary btn-sm">
+
+                                    View Details
+
+                                </a>
+
+                            </td>
+
+                            {% endfor %}
+
+                        </tr>
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="text-center mt-4">
+
+        <a href="{{ url_for('planner') }}"
+           class="btn btn-outline-primary btn-lg me-3">
+
+            ← Back to Planner
+
+        </a>
+
+        <a href="{{ url_for('home') }}"
+           class="btn btn-secondary btn-lg">
+
+            🏠 Home
+
+        </a>
+
+    </div>
+
+</div>
+
+{% endblock %}
