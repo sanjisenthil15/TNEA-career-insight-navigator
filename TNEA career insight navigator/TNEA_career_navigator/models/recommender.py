@@ -13,23 +13,32 @@ from models.database import recommend_colleges
 def get_recommendation_level(student_cutoff, college_cutoff):
     """
     Determine recommendation level based on
-    student's cutoff margin.
+    the cutoff difference between the student
+    and the previous year's cutoff.
     """
 
     difference = student_cutoff - college_cutoff
 
-    if difference >= 2.0:
+    if difference >= 8:
+        return "Excellent Chance"
+
+    elif difference >= 5:
         return "Highly Likely"
 
-    elif difference >= 0.5:
+    elif difference >= 2:
+        return "Good Chance"
+
+    elif difference >= 0:
         return "Competitive"
+
+    elif difference >= -2:
+        return "Borderline"
 
     else:
         return "Ambitious"
     # =========================================================
 # ADMISSION PROBABILITY
 # =========================================================
-
 def calculate_probability(student_cutoff, college_cutoff):
     """
     Calculate admission probability based on
@@ -38,26 +47,44 @@ def calculate_probability(student_cutoff, college_cutoff):
 
     difference = student_cutoff - college_cutoff
 
-    if difference >= 3:
+    if difference >= 10:
         return 99
 
-    elif difference >= 2:
-        return 95
+    elif difference >= 8:
+        return 98
 
-    elif difference >= 1:
+    elif difference >= 6:
+        return 96
+
+    elif difference >= 5:
+        return 94
+
+    elif difference >= 4:
         return 90
 
-    elif difference >= 0.5:
+    elif difference >= 3:
+        return 85
+
+    elif difference >= 2:
         return 80
 
-    elif difference >= 0:
-        return 70
+    elif difference >= 1:
+        return 72
 
-    elif difference >= -0.5:
-        return 60
+    elif difference >= 0:
+        return 65
+
+    elif difference >= -1:
+        return 50
+
+    elif difference >= -2:
+        return 35
+
+    elif difference >= -3:
+        return 20
 
     else:
-        return 40
+        return 5
     # =========================================================
 # RANKING SCORE
 # =========================================================
@@ -67,18 +94,31 @@ def calculate_ranking_score(
     recommendation_level
 ):
     """
-    Calculate ranking score for sorting colleges.
+    Calculate AI ranking score for sorting colleges.
     """
 
     score = probability
 
-    if recommendation_level == "Highly Likely":
-        score += 5
+    # Recommendation level bonus
+    if recommendation_level == "Excellent Chance":
+        score += 15
+
+    elif recommendation_level == "Highly Likely":
+        score += 10
+
+    elif recommendation_level == "Good Chance":
+        score += 7
 
     elif recommendation_level == "Competitive":
-        score += 2
+        score += 4
 
-    return score
+    elif recommendation_level == "Borderline":
+        score += 1
+
+    elif recommendation_level == "Ambitious":
+        score -= 5
+
+    return min(max(score, 0), 100)
 # =========================================================
 # AI RECOMMENDATION REASON
 # =========================================================
@@ -179,7 +219,24 @@ def recommend(
             probability,
             level
         )
+        # Bonus for Autonomous College
+        if college["autonomous"] == "Yes":
+            ranking_score += 5
 
+        # Bonus for Hostel
+        if (
+            college["hostel_boys"] == "Yes"
+            or
+            college["hostel_girls"] == "Yes"
+        ):
+            ranking_score += 2
+
+        # Bonus for Transport
+        if college["transport"] == "Yes":
+            ranking_score += 1
+
+        ranking_score = min(ranking_score, 100)
+        
         ai_reason = generate_ai_reason(
             cutoff,
             college_cutoff,
@@ -198,6 +255,12 @@ def recommend(
             "branch_code": college["branch_code"],
 
             "branch_name": college["branch_name"],
+
+            "college_type": college["college_type"],
+            "autonomous": college["autonomous"],
+            "hostel_boys": college["hostel_boys"],
+            "hostel_girls": college["hostel_girls"],
+            "transport": college["transport"],
 
             "cutoff": college_cutoff,
 

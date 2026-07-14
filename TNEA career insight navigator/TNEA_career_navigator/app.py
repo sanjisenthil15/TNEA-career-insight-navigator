@@ -125,11 +125,11 @@ def recommend_route():
         )
 
     except Exception as e:
-
-        return render_template(
-            "planner.html",
-            error=str(e)
-        )
+        print("=" * 60)
+        print("ERROR:")
+        print(e)
+        print("=" * 60)
+        raise
     # ==================================================
 # COLLEGE DETAILS
 # ==================================================
@@ -154,24 +154,6 @@ def college_details(college_code):
 # COMPARE COLLEGES
 # ==================================================
 
-@app.route("/compare")
-def compare_colleges():
-
-    college_codes = request.args.getlist("college")
-
-    if len(college_codes) < 2:
-
-        return "Please select at least two colleges for comparison."
-
-    colleges = get_compare_colleges(college_codes)
-
-    return render_template(
-
-        "compare.html",
-
-        colleges=colleges
-
-    )
 # ==================================================
 # RUN APPLICATION
 # ==================================================

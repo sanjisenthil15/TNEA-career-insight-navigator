@@ -56,28 +56,62 @@ def get_all_colleges():
 # ==========================================================
 # GET ALL DISTRICTS
 # ==========================================================
-
 def get_all_districts():
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
     cursor.execute("""
-
         SELECT DISTINCT district
-        FROM colleges
-        WHERE district IS NOT NULL
-          AND district != ''
+        FROM (
+            SELECT 'Ariyalur' AS district
+            UNION SELECT 'Chengalpattu'
+            UNION SELECT 'Chennai'
+            UNION SELECT 'Coimbatore'
+            UNION SELECT 'Cuddalore'
+            UNION SELECT 'Dharmapuri'
+            UNION SELECT 'Dindigul'
+            UNION SELECT 'Erode'
+            UNION SELECT 'Kallakurichi'
+            UNION SELECT 'Kancheepuram'
+            UNION SELECT 'Kanyakumari'
+            UNION SELECT 'Karur'
+            UNION SELECT 'Krishnagiri'
+            UNION SELECT 'Madurai'
+            UNION SELECT 'Mayiladuthurai'
+            UNION SELECT 'Nagapattinam'
+            UNION SELECT 'Namakkal'
+            UNION SELECT 'Nilgiris'
+            UNION SELECT 'Perambalur'
+            UNION SELECT 'Pudukkottai'
+            UNION SELECT 'Ramanathapuram'
+            UNION SELECT 'Ranipet'
+            UNION SELECT 'Salem'
+            UNION SELECT 'Sivagangai'
+            UNION SELECT 'Tenkasi'
+            UNION SELECT 'Thanjavur'
+            UNION SELECT 'Theni'
+            UNION SELECT 'Thoothukudi'
+            UNION SELECT 'Tiruchirappalli'
+            UNION SELECT 'Tirunelveli'
+            UNION SELECT 'Tirupathur'
+            UNION SELECT 'Tiruppur'
+            UNION SELECT 'Tiruvallur'
+            UNION SELECT 'Tiruvannamalai'
+            UNION SELECT 'Tiruvarur'
+            UNION SELECT 'Vellore'
+            UNION SELECT 'Viluppuram'
+            UNION SELECT 'Virudhunagar'
+        )
         ORDER BY district
-
     """)
 
-    districts = cursor.fetchall()
+    districts = [row["district"] for row in cursor.fetchall()]
 
     conn.close()
 
     return districts
+
 # ==========================================================
 # GET ALL BRANCHES
 # ==========================================================
@@ -150,6 +184,12 @@ def recommend_colleges(
         c.college_name,
         c.district,
 
+        ci.college_type,
+        ci.autonomous,
+        ci.hostel_boys,
+        ci.hostel_girls,
+        ci.transport,
+
         ct.branch_code,
         b.branch_name,
 
@@ -157,28 +197,21 @@ def recommend_colleges(
 
     FROM cutoffs ct
 
-    JOIN colleges c
+JOIN colleges c
+    ON c.college_code = ct.college_code
 
-        ON c.college_code = ct.college_code
+JOIN branches b
+    ON b.college_code = ct.college_code
+    AND b.branch_code = ct.branch_code
 
-    JOIN branches b
+LEFT JOIN college_info ci
+    ON ci.college_code = c.college_code
 
-        ON
-            b.college_code = ct.college_code
-            AND
-            b.branch_code = ct.branch_code
+WHERE
 
-    WHERE
-
-    ct.year = ?
-
-    AND
-
-    ct.branch_code = ?
-
-    AND
-
-    ct.{column} IS NOT NULL
+ct.year = ?
+AND ct.branch_code = ?
+AND ct.{column} IS NOT NULL
     """
 
     parameters = [
@@ -186,16 +219,15 @@ def recommend_colleges(
     branch_code
 ]
 
-    if district:
+    if district and district != "All Districts":
 
         query += """
 
-        AND c.district = ?
+        AND c.district LIKE ?
 
         """
 
-        parameters.append(district)
-
+        parameters.append(f"%{district}%")
     query += """
 
     ORDER BY
@@ -211,6 +243,11 @@ def recommend_colleges(
 
     results = cursor.fetchall()
 
+    print("Rows returned:", len(results))
+
+    if len(results) > 0:
+        print(dict(results[0]))
+
     conn.close()
 
     return results
@@ -221,17 +258,26 @@ def recommend_colleges(
 def get_college_details(college_code):
 
     conn = get_connection()
-
     cursor = conn.cursor()
 
     cursor.execute("""
-
-        SELECT *
-
-        FROM colleges
-
-        WHERE college_code = ?
-
+        SELECT
+            c.*,
+            ci.college_type,
+            ci.taluk,
+            ci.address,
+            ci.pincode,
+            ci.phone,
+            ci.email,
+            ci.website,
+            ci.autonomous,
+            ci.hostel_boys,
+            ci.hostel_girls,
+            ci.transport
+        FROM colleges c
+        LEFT JOIN college_info ci
+        ON c.college_code = ci.college_code
+        WHERE c.college_code = ?
     """, (college_code,))
 
     college = cursor.fetchone()
@@ -305,3 +351,50 @@ def get_compare_colleges(college_codes):
     conn.close()
 
     return colleges
+
+def get_college_details(college_code):
+
+    conn = get_connection()
+
+    cursor = conn.cursor()
+
+    query = """
+
+    SELECT
+
+        c.college_code,
+        c.college_name,
+        c.district,
+
+        ci.college_type,
+        ci.taluk,
+        ci.address,
+        ci.pincode,
+        ci.phone,
+        ci.email,
+        ci.website,
+        ci.autonomous,
+        ci.hostel_boys,
+        ci.hostel_girls,
+        ci.transport
+
+    FROM colleges c
+
+    LEFT JOIN college_info ci
+
+        ON c.college_code = ci.college_code
+
+    WHERE c.college_code = ?
+
+    """
+
+    cursor.execute(
+        query,
+        (college_code,)
+    )
+
+    result = cursor.fetchone()
+
+    conn.close()
+
+    return result
